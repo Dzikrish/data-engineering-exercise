@@ -1,5 +1,16 @@
-#connect from local postgres
-winpty docker run -it \
+#instalasi postgres docker tambahkan sudo jika menggunakan linux
+sudo docker run -it \
+    -e POSTGRES_USER="root" \
+    -e POSTGRES_PASSWORD="root" \
+    -e POSTGRES_DB="ny_taxi" \
+    -v $(pwd)/ny_taxi_postgres_data:/var/lib/postgresql/data \
+    -p 5432:5432 \
+    postgres:13
+
+#sebelum connect to pgAdmin
+docker network create pg-network
+#connect from local postgres, winpty digunakan untuk windows, jika linux sudo
+sudo docker run -it \
     -e POSTGRES_USER="root" \
     -e POSTGRES_PASSWORD="root" \
     -e POSTGRES_DB="ny_taxi" \
@@ -10,7 +21,8 @@ winpty docker run -it \
     postgres:13
 
 #connect from pgAdmin
-docker run -it \
+
+sudo docker run -it \
     -e PGADMIN_DEFAULT_EMAIL="admin@admin.com" \
     -e PGADMIN_DEFAULT_PASSWORD="root" \
     -p 8080:80 \
@@ -21,7 +33,8 @@ docker run -it \
 #convert ipynb to py
 jupyter nbconvert --to=script upload-data.ipynb
 
-#memanggil python
+#memanggil jika menggunakan python
+#jika menggunakan python pastikan sudah install apt-get wget pip install pandas sqlalchemy psycopg2
 url="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz"
 python ingest-data.py \
     --user=root \
@@ -30,4 +43,21 @@ python ingest-data.py \
     --port=5432 \
     --dbName=ny_taxi \
     --tableName=yellow_taxi_trips \
-    --url=${url}
+    --url=${url} \
+
+#jika akan menggunakan docker
+#cek yang dibutuhkan pada Dockerfile
+#kemudian jalankan
+sudo docker build -t taxi_ingest:v001 .
+#lalu jalankan
+url="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz"
+sudo docker run -it \
+    --network=pg-network \
+    taxi_ingest:v001 \
+        --user=root \
+        --password=root \
+        --host=localhost \
+        --port=5432 \
+        --dbName=ny_taxi \
+        --tableName=yellow_taxi_trips \
+        --url=${url}

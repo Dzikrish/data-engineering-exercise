@@ -12,6 +12,7 @@ def main(params):
     dbName = params.dbName
     tableName = params.tableName
     url = params.url
+    print(user, password, host, port, dbName)
 
     if url.endswith('.csv.gz'):
         csvName = 'output.csv.gz'
@@ -19,7 +20,7 @@ def main(params):
         csvName = 'output.csv'
 
     # download dataset
-    os.system(f"wget {url} -O {csvName}")
+    #os.system(f"wget {url} -O {csvName}")
 
     #format url: 'postgresql://[user]:[password]@[host]:[port]/[dbname]'
     engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{dbName}')
