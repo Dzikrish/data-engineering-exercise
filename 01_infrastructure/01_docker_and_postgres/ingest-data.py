@@ -12,7 +12,6 @@ def main(params):
     dbName = params.dbName
     tableName = params.tableName
     url = params.url
-    print(user, password, host, port, dbName)
 
     if url.endswith('.csv.gz'):
         csvName = 'output.csv.gz'
@@ -20,13 +19,18 @@ def main(params):
         csvName = 'output.csv'
 
     # download dataset
-    #os.system(f"wget {url} -O {csvName}")
+    os.system(f"wget {url} -O {csvName}")
 
+    print(user, password, host, port, dbName)
     #format url: 'postgresql://[user]:[password]@[host]:[port]/[dbname]'
     engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{dbName}')
 
     #membagi data dalam chunk
-    df_iter = pd.read_csv(csvName, iterator=True, chunksize=100000)
+    if url.endswith('.csv.gz'):
+        df_iter = pd.read_csv(csvName, iterator=True, chunksize=100000, compression ='gzip')
+    else:
+        df_iter = pd.read_csv(csvName, iterator=True, chunksize=100000)
+
 
     # Mendapatkan chunk pertama dan menyimpannya ke dalam variabel df
     df=next(df_iter)
